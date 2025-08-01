@@ -1,9 +1,13 @@
 import { Router } from 'express'
-import { GetDisasterInfoController } from '../controllers/disaster/getDisasterInfoController'
+import { GetEarthquakeInfoController } from '../controllers/disaster/getEarthquakeInfoController'
+import { GetTsunamiInfoController } from '../controllers/disaster/getTsunamiInfoController'
 
 const router = Router()
 
-// 災害情報取得
-router.get('/disaster-info', GetDisasterInfoController.getDisasterInfo)
+// 地震情報取得
+router.get('/earthquake-info', GetEarthquakeInfoController.getEarthquakeInfo)
+
+// 津波情報取得
+router.get('/tsunami-info', GetTsunamiInfoController.getTsunamiInfo)
 
 export default router 

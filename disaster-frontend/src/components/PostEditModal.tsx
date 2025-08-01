@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { disasterAPI, Post } from '@/lib/api'
+import { postApi } from '@/lib/apis/postApi'
+import { Post } from '@/types'
 
 interface PostEditModalProps {
   post: Post | null
@@ -47,7 +48,7 @@ export default function PostEditModal({ post, isOpen, onClose, onUpdate }: PostE
     setError('')
 
     try {
-      await disasterAPI.updatePost({
+      await postApi.updatePost({
         id: post.id,
         title,
         category,
@@ -74,7 +75,7 @@ export default function PostEditModal({ post, isOpen, onClose, onUpdate }: PostE
     setError('')
 
     try {
-      await disasterAPI.deletePost(post.id)
+      await postApi.deletePost(post.id)
 
       onUpdate()
       onClose()

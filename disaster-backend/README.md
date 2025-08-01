@@ -54,7 +54,8 @@ npm run dev
 - `GET /health` - サーバーの状態確認
 
 ### 災害情報
-- `GET /api/disaster-info` - 気象庁APIから災害情報を取得
+- `GET /api/earthquake-info` - 気象庁APIから地震情報を取得
+- `GET /api/tsunami-info` - 気象庁APIから津波情報を取得
 
 ### 投稿管理
 - `GET /api/posts` - 投稿一覧を取得

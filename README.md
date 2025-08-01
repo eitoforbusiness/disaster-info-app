@@ -4,10 +4,18 @@
 
 ## プロジェクト構成
 
+このプロジェクトはフロントエンドとバックエンドが完全に分離された構成になっています：
+
 ```
 Practice TS/
 ├── disaster-frontend/     # フロントエンド（Next.js）
+│   ├── src/              # ソースコード
+│   ├── public/           # 静的ファイル
+│   └── package.json      # フロントエンド依存関係
 ├── disaster-backend/      # バックエンド（Express.js）
+│   ├── src/              # ソースコード
+│   ├── prisma/           # データベーススキーマ
+│   └── package.json      # バックエンド依存関係
 └── README.md             # このファイル
 ```
 
@@ -117,7 +125,8 @@ npm run dev
 
 ### バックエンドAPI（Express.js）
 - `GET /health` - ヘルスチェック
-- `GET /api/disaster-info` - 災害情報取得
+- `GET /api/earthquake-info` - 地震情報取得
+- `GET /api/tsunami-info` - 津波情報取得
 - `GET /api/posts` - 投稿一覧取得
 - `POST /api/posts` - 投稿作成
 - `PUT /api/posts` - 投稿更新

@@ -1,28 +1,28 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { disasterAPI } from '@/lib/api'
+import { postApi } from '@/lib/apis/postApi'
+import { Location } from '@/types'
+import { POST_CATEGORIES } from '@/constants/categories'
+import { validatePostForm } from '@/utils/validationUtils'
+import LocationInput from './LocationInput'
 
 interface PostFormProps {
-  onPostCreated: () => void
-  selectedLocation?: { lat: number; lng: number } | null
+  onPostCreated: (postData: {
+    title: string
+    category: string
+    comment: string
+    latitude: number
+    longitude: number
+  }) => void
+  selectedLocation?: Location | null
 }
-
-const CATEGORIES = [
-  '通行止め',
-  '陥没',
-  '避難所混雑',
-  '道路損壊',
-  '建物損壊',
-  'その他'
-]
 
 export default function PostForm({ onPostCreated, selectedLocation }: PostFormProps) {
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
   const [comment, setComment] = useState('')
-  const [latitude, setLatitude] = useState<number | null>(null)
-  const [longitude, setLongitude] = useState<number | null>(null)
+  const [location, setLocation] = useState<Location | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -30,41 +30,17 @@ export default function PostForm({ onPostCreated, selectedLocation }: PostFormPr
   // 選択された位置情報を更新
   useEffect(() => {
     if (selectedLocation) {
-      setLatitude(selectedLocation.lat)
-      setLongitude(selectedLocation.lng)
+      setLocation(selectedLocation)
     }
   }, [selectedLocation])
-
-  // 現在地を取得
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setError('位置情報が利用できません')
-      return
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLatitude(position.coords.latitude)
-        setLongitude(position.coords.longitude)
-        setError('')
-      },
-      (error) => {
-        setError('位置情報の取得に失敗しました')
-        console.error('位置情報エラー:', error)
-      }
-    )
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!title || !category || !comment) {
-      setError('すべての項目を入力してください')
-      return
-    }
-
-    if (latitude === null || longitude === null) {
-      setError('位置情報を設定してください')
+    // バリデーション
+    const validation = validatePostForm({ title, category, comment, location })
+    if (!validation.isValid) {
+      setError(validation.error)
       return
     }
 
@@ -72,24 +48,25 @@ export default function PostForm({ onPostCreated, selectedLocation }: PostFormPr
     setError('')
 
     try {
-      await disasterAPI.createPost({
+      const postData = {
         title,
         category,
         comment,
-        latitude,
-        longitude,
-      })
+        latitude: location!.lat,
+        longitude: location!.lng,
+      }
+
+      await postApi.createPost(postData)
 
       // フォームをリセット
       setTitle('')
       setCategory('')
       setComment('')
-      setLatitude(null)
-      setLongitude(null)
+      setLocation(null)
       setSuccess('投稿が完了しました！')
       
       // 親コンポーネントに通知
-      onPostCreated()
+      onPostCreated(postData)
 
       // 3秒後に成功メッセージを消す
       setTimeout(() => setSuccess(''), 3000)
@@ -144,7 +121,7 @@ export default function PostForm({ onPostCreated, selectedLocation }: PostFormPr
             required
           >
             <option value="">カテゴリを選択</option>
-            {CATEGORIES.map((cat) => (
+            {POST_CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>
@@ -167,29 +144,12 @@ export default function PostForm({ onPostCreated, selectedLocation }: PostFormPr
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            位置情報 *
-          </label>
-          <div className="flex gap-2 mb-2">
-            <button
-              type="button"
-              onClick={getCurrentLocation}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              現在地を取得
-            </button>
-            <span className="text-sm text-gray-500 self-center">
-              または地図をクリックして位置を選択
-            </span>
-          </div>
-          
-          {latitude !== null && longitude !== null && (
-            <div className="text-sm text-gray-600">
-              緯度: {latitude.toFixed(6)}, 経度: {longitude.toFixed(6)}
-            </div>
-          )}
-        </div>
+        <LocationInput
+          selectedLocation={selectedLocation}
+          onLocationChange={setLocation}
+          error={error}
+          setError={setError}
+        />
 
         <button
           type="submit"

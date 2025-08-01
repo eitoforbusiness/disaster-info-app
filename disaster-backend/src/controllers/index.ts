@@ -6,7 +6,8 @@ export { DeletePostController } from './post/deletePostController'
 export { LikePostController } from './post/likePostController'
 
 // 災害情報関連コントローラー
-export { GetDisasterInfoController } from './disaster/getDisasterInfoController'
+export { GetEarthquakeInfoController } from './disaster/getEarthquakeInfoController'
+export { GetTsunamiInfoController } from './disaster/getTsunamiInfoController'
 
 // ヘルスチェック関連コントローラー
 export { HealthCheckController } from './health/healthCheckController' 
