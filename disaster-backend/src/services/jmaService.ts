@@ -2,8 +2,8 @@
 export async function fetchJMAWeatherInfo() {
   try {
     const disasterInfo: any[] = []
-    
-    // 地震情報を取得
+
+    // 地震情報を取得（気象庁APIから実際のデータを取得）
     try {
       const earthquakeResponse = await fetch('https://www.jma.go.jp/bosai/quake/data/list.json', {
         headers: {
@@ -91,34 +91,21 @@ export async function fetchJMAWeatherInfo() {
     // 津波情報を取得
     try {
       const tsunamiResponse = await fetch('https://www.jma.go.jp/bosai/tsunami/data/list.json', {
-        headers: {
-          'User-Agent': 'DisasterInfoApp/1.0'
-        }
+        headers: { 'User-Agent': 'DisasterInfoApp/1.0' }
       })
-      
       if (tsunamiResponse.ok) {
         const tsunamiData = await tsunamiResponse.json() as any[]
-        
-        const recentTsunamis = tsunamiData
-          .slice(0, 5) // 最新5件に制限
-          .map((tsunami: any, index: number) => {
-            const title = tsunami.ttl || '津波情報'
-            const time = tsunami.at || new Date().toISOString()
-            const area = tsunami.anm || '全国'
-            
-            return {
-              id: `tsunami_${tsunami.eid || 'unknown'}_${index}_${Date.now()}`,
-              title: title,
-              description: `${area}に津波注意報・警報が発表されました。`,
-              severity: 'high',
-              timestamp: time,
-              location: area,
-              type: 'tsunami'
-            }
-          })
-        
-        disasterInfo.push(...recentTsunamis)
-        console.log(`津波情報を${recentTsunamis.length}件取得しました`)
+        const recentTsunami = tsunamiData.slice(0, 5).map((tsunami: any, index: number) => ({
+          id: `tsunami_${tsunami.eid || 'unknown'}_${index}_${Date.now()}`,
+          title: tsunami.ttl || '津波情報',
+          description: tsunami.anm ? `${tsunami.anm}付近で津波情報が発表されました。` : '津波情報が発表されました。',
+          severity: 'high',
+          timestamp: tsunami.at || new Date().toISOString(),
+          location: tsunami.anm || '不明',
+          type: 'tsunami'
+        }))
+        disasterInfo.push(...recentTsunami)
+        console.log(`津波情報を${recentTsunami.length}件取得しました`)
       } else {
         console.error('津波情報APIエラー:', tsunamiResponse.status)
       }
@@ -126,73 +113,80 @@ export async function fetchJMAWeatherInfo() {
       console.error('津波情報取得エラー:', error)
     }
 
-    // 大雨・洪水警報のモックデータ（実際のAPIが利用できないため）
+    // 火山情報を取得
     try {
-      const mockWeatherWarnings = [
-        {
-          id: `heavy_rain_mock_1_${Date.now()}`,
-          title: '大雨警報',
-          description: '東京都に大雨警報が発表されました。河川の増水に注意してください。',
+      const volcanoResponse = await fetch('https://www.jma.go.jp/bosai/volcano/data/list.json', {
+        headers: { 'User-Agent': 'DisasterInfoApp/1.0' }
+      })
+      if (volcanoResponse.ok) {
+        const volcanoData = await volcanoResponse.json() as any[]
+        const recentVolcano = volcanoData.slice(0, 5).map((vol: any, index: number) => ({
+          id: `volcano_${index}_${Date.now()}`,
+          title: vol.ttl || '火山情報',
+          description: vol.headline || '火山に関する情報が発表されました。',
           severity: 'medium',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2時間前
-          location: '東京都',
-          type: 'heavy_rain'
-        },
-        {
-          id: `heavy_rain_mock_2_${Date.now()}`,
-          title: '洪水注意報',
-          description: '神奈川県に洪水注意報が発表されました。低地の浸水に注意してください。',
-          severity: 'medium',
-          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4時間前
-          location: '神奈川県',
-          type: 'heavy_rain'
-        }
-      ]
-      
-      disasterInfo.push(...mockWeatherWarnings)
-      console.log(`大雨・洪水警報のモックデータを${mockWeatherWarnings.length}件追加しました`)
-    } catch (error) {
-      console.error('大雨・洪水警報モックデータ作成エラー:', error)
-    }
-
-    // 台風情報のモックデータ（実際のAPIが利用できないため）
-    try {
-      const mockTyphoonInfo = [
-        {
-          id: `typhoon_mock_1_${Date.now()}`,
-          title: '台風情報',
-          description: '台風12号が太平洋上で発生しました。今後の進路に注意してください。',
-          severity: 'high',
-          timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6時間前
-          location: '太平洋',
-          type: 'typhoon'
-        }
-      ]
-      
-      disasterInfo.push(...mockTyphoonInfo)
-      console.log(`台風情報のモックデータを${mockTyphoonInfo.length}件追加しました`)
-    } catch (error) {
-      console.error('台風情報モックデータ作成エラー:', error)
-    }
-
-    // 火山情報のモックデータ（実際のAPIが利用できないため）
-    try {
-      const mockVolcanoInfo = [
-        {
-          id: `volcano_mock_1_${Date.now()}`,
-          title: '火山情報',
-          description: '桜島で火山活動が活発化しています。噴火警戒レベルが引き上げられました。',
-          severity: 'medium',
-          timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), // 8時間前
-          location: '桜島',
+          timestamp: vol.at || new Date().toISOString(),
+          location: vol.anm || '不明',
           type: 'volcano'
-        }
-      ]
-      
-      disasterInfo.push(...mockVolcanoInfo)
-      console.log(`火山情報のモックデータを${mockVolcanoInfo.length}件追加しました`)
+        }))
+        disasterInfo.push(...recentVolcano)
+        console.log(`火山情報を${recentVolcano.length}件取得しました`)
+      } else {
+        console.error('火山情報APIエラー:', volcanoResponse.status)
+      }
     } catch (error) {
-      console.error('火山情報モックデータ作成エラー:', error)
+      console.error('火山情報取得エラー:', error)
+    }
+
+    // 気象警報・注意報（大雨など）
+    try {
+      const warningResponse = await fetch('https://www.jma.go.jp/bosai/warning/data/warning/130000.json', {
+        headers: { 'User-Agent': 'DisasterInfoApp/1.0' }
+      })
+      if (warningResponse.ok) {
+        const warningData = await warningResponse.json() as any
+        if (warningData.headlineText) {
+          disasterInfo.push({
+            id: `warning_${Date.now()}`,
+            title: '気象警報・注意報',
+            description: warningData.headlineText,
+            severity: 'medium',
+            timestamp: warningData.reportDatetime || new Date().toISOString(),
+            location: '東京都',
+            type: 'rain'
+          })
+          console.log('気象警報・注意報を取得しました')
+        }
+      } else {
+        console.error('警報情報APIエラー:', warningResponse.status)
+      }
+    } catch (error) {
+      console.error('警報情報取得エラー:', error)
+    }
+
+    // 台風情報を取得
+    try {
+      const typhoonResponse = await fetch('https://www.jma.go.jp/bosai/typhoon/data/typhoon.json', {
+        headers: { 'User-Agent': 'DisasterInfoApp/1.0' }
+      })
+      if (typhoonResponse.ok) {
+        const typhoonData = await typhoonResponse.json() as any[]
+        const recentTyphoon = typhoonData.slice(0, 5).map((ty: any, index: number) => ({
+          id: `typhoon_${index}_${Date.now()}`,
+          title: ty.name ? `台風情報: ${ty.name}` : '台風情報',
+          description: ty.detail || '台風に関する情報が発表されています。',
+          severity: 'high',
+          timestamp: ty.at || new Date().toISOString(),
+          location: ty.position || '不明',
+          type: 'typhoon'
+        }))
+        disasterInfo.push(...recentTyphoon)
+        console.log(`台風情報を${recentTyphoon.length}件取得しました`)
+      } else {
+        console.error('台風情報APIエラー:', typhoonResponse.status)
+      }
+    } catch (error) {
+      console.error('台風情報取得エラー:', error)
     }
     
     // データが取得できない場合は空の配列を返す

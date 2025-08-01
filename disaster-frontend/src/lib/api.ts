@@ -28,7 +28,7 @@ const apiClient = {
   },
 
   // POST リクエスト
-  async post<T>(endpoint: string, data: any): Promise<T> {
+  async post<T>(endpoint: string, data: Record<string, unknown>): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -36,7 +36,7 @@ const apiClient = {
   },
 
   // PUT リクエスト
-  async put<T>(endpoint: string, data: any): Promise<T> {
+  async put<T>(endpoint: string, data: Record<string, unknown>): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -57,7 +57,7 @@ export interface DisasterInfo {
   severity: 'high' | 'medium' | 'low'
   timestamp: string
   location: string
-  type: 'earthquake' | 'tsunami' | 'heavy_rain' | 'typhoon' | 'volcano' | 'other'
+  type: 'earthquake' | 'tsunami' | 'volcano' | 'typhoon' | 'rain' | 'wind' | 'other'
 }
 
 export interface Post {
