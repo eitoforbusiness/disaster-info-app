@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景円 -->
+  <circle cx="256" cy="256" r="240" fill="#dc2626"/>
+  
+  <!-- 盾の形 -->
+  <path d="M256 80 L320 120 L320 200 C320 280 256 320 256 320 C256 320 192 280 192 200 L192 120 Z" fill="white"/>
+  
+  <!-- 盾の内側 -->
+  <path d="M256 100 L300 130 L300 190 C300 250 256 280 256 280 C256 280 212 250 212 190 L212 130 Z" fill="#dc2626"/>
+  
+  <!-- 警告マーク -->
+  <path d="M256 160 L280 200 L240 200 Z" fill="white"/>
+  <circle cx="256" cy="220" r="8" fill="white"/>
+</svg> 
