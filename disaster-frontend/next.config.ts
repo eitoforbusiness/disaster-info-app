@@ -1,20 +1,12 @@
 import type { NextConfig } from "next";
-// @ts-ignore
-import withPWA from 'next-pwa';
 
-const nextConfig: NextConfig = withPWA({
+const nextConfig: NextConfig = {
   webpack: (config: any) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
     };
     return config;
-  },
-  pwa: {
-    dest: 'public',
-    register: true,
-    skipWaiting: true,
-    disable: process.env.NODE_ENV === 'development'
   },
   async rewrites() {
     return [
@@ -24,6 +16,6 @@ const nextConfig: NextConfig = withPWA({
       },
     ];
   },
-});
+};
 
 export default nextConfig;

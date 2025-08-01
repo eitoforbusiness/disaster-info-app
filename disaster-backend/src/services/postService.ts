@@ -76,4 +76,25 @@ export class PostService {
       }
     })
   }
+
+  // いいね数取得
+  static async getLikes(id: number) {
+    const post = await prisma.post.findUnique({
+      where: { id },
+      select: { likes: true }
+    })
+    return { likes: post?.likes || 0 }
+  }
+
+  // いいね削除
+  static async unlikePost(id: number) {
+    return await prisma.post.update({
+      where: { id },
+      data: {
+        likes: {
+          decrement: 1
+        }
+      }
+    })
+  }
 } 

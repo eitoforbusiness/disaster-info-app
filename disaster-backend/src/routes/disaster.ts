@@ -4,10 +4,12 @@ import { GetTsunamiInfoController } from '../controllers/disaster/getTsunamiInfo
 
 const router = Router()
 
-// 地震情報取得
-router.get('/earthquake-info', GetEarthquakeInfoController.getEarthquakeInfo)
+// 災害情報のベースパス
+router.get('/disasters/earthquakes', GetEarthquakeInfoController.getEarthquakeInfo)
+router.get('/disasters/tsunamis', GetTsunamiInfoController.getTsunamiInfo)
 
-// 津波情報取得
+// 後方互換性のため残しておく（非推奨）
+router.get('/earthquake-info', GetEarthquakeInfoController.getEarthquakeInfo)
 router.get('/tsunami-info', GetTsunamiInfoController.getTsunamiInfo)
 
 export default router 

@@ -22,7 +22,9 @@ router.put('/:id', UpdatePostController.updatePost)
 // 投稿削除
 router.delete('/:id', DeletePostController.deletePost)
 
-// いいね機能
-router.post('/:id/likes', LikePostController.likePost)
+// いいね機能（RESTful設計）
+router.get('/:id/likes', LikePostController.getLikes)        // いいね数取得
+router.post('/:id/likes', LikePostController.likePost)       // いいね追加
+router.delete('/:id/likes', LikePostController.unlikePost)   // いいね削除
 
 export default router 
