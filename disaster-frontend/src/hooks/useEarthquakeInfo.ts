@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { earthquakeApi } from '@/lib/apis/earthquakeApi'
 import { DisasterInfo } from '@/types'
 
@@ -25,45 +25,39 @@ const sampleEarthquakeData: DisasterInfo[] = [
 ]
 
 export function useEarthquakeInfo() {
-  const [earthquakeInfo, setEarthquakeInfo] = useState<DisasterInfo[]>(sampleEarthquakeData)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+  const {
+    data: earthquakeInfo = sampleEarthquakeData,
+    isLoading,
+    error,
+    refetch,
+    dataUpdatedAt
+  } = useQuery({
+    queryKey: ['earthquakeInfo'],
+    queryFn: async (): Promise<DisasterInfo[]> => {
+      try {
+        return await earthquakeApi.getEarthquakeInfo()
+      } catch (error) {
+        console.error('地震情報の取得に失敗:', error)
+        // エラー時はサンプルデータを返す
+        return sampleEarthquakeData
+      }
+    },
+    refetchInterval: 5 * 60 * 1000, // 5分ごとに自動更新
+    refetchIntervalInBackground: true,
+    staleTime: 4 * 60 * 1000, // 4分間はデータを新鮮とみなす
+    retry: 1,
+    retryDelay: 1000,
+  })
 
-  const fetchEarthquakeInfo = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await earthquakeApi.getEarthquakeInfo()
-      setEarthquakeInfo(data)
-      setLastUpdated(new Date())
-    } catch (error) {
-      console.error('地震情報の取得に失敗:', error)
-      setError('地震情報の取得に失敗しました')
-      // エラー時はサンプルデータを表示
-      setEarthquakeInfo(sampleEarthquakeData)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchEarthquakeInfo()
-    
-    // 5分ごとに更新
-    const interval = setInterval(fetchEarthquakeInfo, 5 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [])
-
-  // 次回更新時刻を計算
+  const lastUpdated = new Date(dataUpdatedAt)
   const nextUpdate = new Date(lastUpdated.getTime() + 5 * 60 * 1000)
 
   return {
     earthquakeInfo,
     isLoading,
-    error,
+    error: error ? '地震情報の取得に失敗しました' : null,
     lastUpdated,
     nextUpdate,
-    refetch: fetchEarthquakeInfo
+    refetch
   }
 } 

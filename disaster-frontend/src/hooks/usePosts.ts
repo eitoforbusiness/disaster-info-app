@@ -1,80 +1,98 @@
-import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { postApi } from '@/lib/apis/postApi'
-import { Post } from '@/types'
+import { Post, CreatePostData, UpdatePostData } from '@/types'
 
 export function usePosts() {
-  const [posts, setPosts] = useState<Post[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const fetchPosts = async () => {
-    try {
-      const data = await postApi.getPosts()
-      setPosts(data)
-      setError(null)
-    } catch (error) {
-      setError('投稿の取得に失敗しました')
-      console.error('投稿取得エラー:', error)
-    } finally {
-      setIsLoading(false)
+  const {
+    data: posts = [],
+    isLoading,
+    error,
+    refetch: fetchPosts
+  } = useQuery({
+    queryKey: ['posts'],
+    queryFn: postApi.getPosts,
+    staleTime: 30 * 1000, // 30秒間はデータを新鮮とみなす
+    retry: 1,
+  })
+
+  // 投稿作成のmutation
+  const createPostMutation = useMutation({
+    mutationFn: postApi.createPost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] })
+    },
+    onError: (error) => {
+      console.error('投稿作成エラー:', error)
     }
-  }
+  })
 
-  useEffect(() => {
-    fetchPosts()
-  }, [])
+  // 投稿更新のmutation
+  const updatePostMutation = useMutation({
+    mutationFn: postApi.updatePost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] })
+    },
+    onError: (error) => {
+      console.error('投稿更新エラー:', error)
+    }
+  })
 
-  const createPost = async (postData: {
-    title: string
-    category: string
-    comment: string
-    latitude: number
-    longitude: number
-  }) => {
+  // 投稿削除のmutation
+  const deletePostMutation = useMutation({
+    mutationFn: postApi.deletePost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] })
+    },
+    onError: (error) => {
+      console.error('投稿削除エラー:', error)
+    }
+  })
+
+  // いいねのmutation
+  const likePostMutation = useMutation({
+    mutationFn: postApi.likePost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] })
+    },
+    onError: (error) => {
+      console.error('いいねエラー:', error)
+    }
+  })
+
+  const createPost = async (postData: CreatePostData) => {
     try {
-      await postApi.createPost(postData)
-      await fetchPosts() // 投稿一覧を再取得
+      await createPostMutation.mutateAsync(postData)
       return true
     } catch (error) {
-      console.error('投稿作成エラー:', error)
       throw error
     }
   }
 
-  const updatePost = async (postData: {
-    id: number
-    title: string
-    category: string
-    comment: string
-  }) => {
+  const updatePost = async (postData: UpdatePostData) => {
     try {
-      await postApi.updatePost(postData)
-      await fetchPosts() // 投稿一覧を再取得
+      await updatePostMutation.mutateAsync(postData)
       return true
     } catch (error) {
-      console.error('投稿更新エラー:', error)
       throw error
     }
   }
 
   const deletePost = async (id: number) => {
     try {
-      await postApi.deletePost(id)
-      await fetchPosts() // 投稿一覧を再取得
+      await deletePostMutation.mutateAsync(id)
       return true
     } catch (error) {
-      console.error('投稿削除エラー:', error)
       throw error
     }
   }
 
   const likePost = async (id: number) => {
     try {
-      await postApi.likePost(id)
-      await fetchPosts() // 投稿一覧を再取得
+      await likePostMutation.mutateAsync(id)
       return true
     } catch (error) {
-      console.error('いいねエラー:', error)
       throw error
     }
   }
@@ -82,11 +100,16 @@ export function usePosts() {
   return {
     posts,
     isLoading,
-    error,
+    error: error ? '投稿の取得に失敗しました' : null,
     fetchPosts,
     createPost,
     updatePost,
     deletePost,
-    likePost
+    likePost,
+    // mutationの状態も返す（必要に応じて）
+    isCreating: createPostMutation.isPending,
+    isUpdating: updatePostMutation.isPending,
+    isDeleting: deletePostMutation.isPending,
+    isLiking: likePostMutation.isPending,
   }
 } 

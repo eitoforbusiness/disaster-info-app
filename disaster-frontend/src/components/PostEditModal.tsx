@@ -8,7 +8,12 @@ interface PostEditModalProps {
   post: Post | null
   isOpen: boolean
   onClose: () => void
-  onUpdate: () => void
+  onUpdate: (postData: {
+    id: number
+    title: string
+    category: string
+    comment: string
+  }) => void
 }
 
 const CATEGORIES = [
@@ -48,14 +53,16 @@ export default function PostEditModal({ post, isOpen, onClose, onUpdate }: PostE
     setError('')
 
     try {
-      await postApi.updatePost({
+      const updatedPost = {
         id: post.id,
         title,
         category,
         comment,
-      })
+      }
+      
+      await postApi.updatePost(updatedPost)
 
-      onUpdate()
+      onUpdate(updatedPost)
       onClose()
     } catch (error) {
       setError(error instanceof Error ? error.message : '投稿の更新に失敗しました')
@@ -77,7 +84,8 @@ export default function PostEditModal({ post, isOpen, onClose, onUpdate }: PostE
     try {
       await postApi.deletePost(post.id)
 
-      onUpdate()
+      // 削除の場合は引数なしで呼び出し
+      onUpdate({ id: post.id, title: '', category: '', comment: '' })
       onClose()
     } catch (error) {
       setError(error instanceof Error ? error.message : '投稿の削除に失敗しました')
