@@ -2,15 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-
-interface DisasterInfo {
-  id: string
-  title: string
-  description: string
-  severity: 'high' | 'medium' | 'low'
-  timestamp: string
-  location: string
-}
+import { disasterAPI, DisasterInfo } from '@/lib/api'
 
 // サンプルデータ（実際のAPIに置き換える予定）
 const sampleDisasterData: DisasterInfo[] = [
@@ -20,7 +12,8 @@ const sampleDisasterData: DisasterInfo[] = [
     description: '震度4の地震が発生しました。',
     severity: 'high',
     timestamp: '2024-01-15T10:30:00Z',
-    location: '東京都'
+    location: '東京都',
+    type: 'earthquake'
   },
   {
     id: '2',
@@ -28,7 +21,8 @@ const sampleDisasterData: DisasterInfo[] = [
     description: '大雨による河川の氾濫に注意してください。',
     severity: 'medium',
     timestamp: '2024-01-15T09:15:00Z',
-    location: '神奈川県'
+    location: '神奈川県',
+    type: 'rain'
   },
   {
     id: '3',
@@ -36,7 +30,8 @@ const sampleDisasterData: DisasterInfo[] = [
     description: '強風による被害にご注意ください。',
     severity: 'low',
     timestamp: '2024-01-15T08:45:00Z',
-    location: '千葉県'
+    location: '千葉県',
+    type: 'wind'
   }
 ]
 
@@ -70,22 +65,17 @@ export default function HomePage() {
   const [disasterInfo, setDisasterInfo] = useState<DisasterInfo[]>(sampleDisasterData)
   const [isLoading, setIsLoading] = useState(false)
 
-  // 実際のAPIから災害情報を取得する関数（将来的に実装）
+  // 実際のAPIから災害情報を取得する関数
   const fetchDisasterInfo = async () => {
     setIsLoading(true)
     try {
-      // ここで気象庁APIなどを呼び出す予定
-      // const response = await fetch('/api/disaster-info')
-      // const data = await response.json()
-      // setDisasterInfo(data)
-      
-      // 現在はサンプルデータを使用
-      setTimeout(() => {
-        setDisasterInfo(sampleDisasterData)
-        setIsLoading(false)
-      }, 1000)
+      const data = await disasterAPI.getDisasterInfo()
+      setDisasterInfo(data)
     } catch (error) {
       console.error('災害情報の取得に失敗:', error)
+      // エラー時はサンプルデータを表示
+      setDisasterInfo(sampleDisasterData)
+    } finally {
       setIsLoading(false)
     }
   }

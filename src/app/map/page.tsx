@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import PostForm from '@/components/PostForm'
+import PostEditModal from '@/components/PostEditModal'
+import { disasterAPI, Post } from '@/lib/api'
 
 // Leafletコンポーネントを動的インポート（SSRエラー回避）
 const Map = dynamic(() => import('@/components/Map'), {
@@ -10,30 +12,20 @@ const Map = dynamic(() => import('@/components/Map'), {
   loading: () => <div className="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">地図を読み込み中...</div>
 })
 
-interface Post {
-  id: number
-  title: string
-  category: string
-  comment: string
-  latitude: number
-  longitude: number
-  createdAt: string
-}
+
 
 export default function MapPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [editingPost, setEditingPost] = useState<Post | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // 投稿を取得
   const fetchPosts = async () => {
     try {
-      const response = await fetch('/api/posts')
-      if (!response.ok) {
-        throw new Error('投稿の取得に失敗しました')
-      }
-      const data = await response.json()
+      const data = await disasterAPI.getPosts()
       setPosts(data)
     } catch (error) {
       setError('投稿の取得に失敗しました')
@@ -55,6 +47,18 @@ export default function MapPage() {
   // 地図での位置選択
   const handleLocationSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng })
+  }
+
+  // 投稿編集モーダルを開く
+  const handleEditPost = (post: Post) => {
+    setEditingPost(post)
+    setIsEditModalOpen(true)
+  }
+
+  // 投稿編集モーダルを閉じる
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false)
+    setEditingPost(null)
   }
 
   if (isLoading) {
@@ -132,6 +136,12 @@ export default function MapPage() {
                           位置: {post.latitude.toFixed(4)}, {post.longitude.toFixed(4)}
                         </p>
                       </div>
+                      <button
+                        onClick={() => handleEditPost(post)}
+                        className="ml-2 px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        編集
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -139,6 +149,14 @@ export default function MapPage() {
             )}
           </div>
         </div>
+
+        {/* 投稿編集モーダル */}
+        <PostEditModal
+          post={editingPost}
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          onUpdate={handlePostCreated}
+        />
       </div>
     </div>
   )

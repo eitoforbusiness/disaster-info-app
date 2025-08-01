@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { disasterAPI } from '@/lib/api'
 
 interface PostFormProps {
   onPostCreated: () => void
@@ -71,24 +72,13 @@ export default function PostForm({ onPostCreated, selectedLocation }: PostFormPr
     setError('')
 
     try {
-      const response = await fetch('/api/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title,
-          category,
-          comment,
-          latitude,
-          longitude,
-        }),
+      await disasterAPI.createPost({
+        title,
+        category,
+        comment,
+        latitude,
+        longitude,
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || '投稿に失敗しました')
-      }
 
       // フォームをリセット
       setTitle('')

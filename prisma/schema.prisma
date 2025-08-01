@@ -20,6 +20,7 @@ model Post {
   comment   String
   latitude  Float
   longitude Float
+  likes     Int      @default(0)  // いいね数（信頼度）
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
