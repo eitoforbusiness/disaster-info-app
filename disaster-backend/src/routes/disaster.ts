@@ -1,9 +1,9 @@
 import { Router } from 'express'
-import { DisasterController } from '../controllers/disasterController'
+import { GetDisasterInfoController } from '../controllers/disaster/getDisasterInfoController'
 
 const router = Router()
 
 // 災害情報取得
-router.get('/disaster-info', DisasterController.getDisasterInfo)
+router.get('/disaster-info', GetDisasterInfoController.getDisasterInfo)
 
 export default router 

@@ -1,10 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import dynamic from 'next/dynamic'
+import { usePosts } from '@/hooks/usePosts'
+import { Post } from '@/types'
 import PostForm from '@/components/PostForm'
 import PostEditModal from '@/components/PostEditModal'
-import { disasterAPI, Post } from '@/lib/api'
+import PostList from '@/components/PostList'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 // Leafletコンポーネントを動的インポート（SSRエラー回避）
 const Map = dynamic(() => import('@/components/Map'), {
@@ -12,36 +15,25 @@ const Map = dynamic(() => import('@/components/Map'), {
   loading: () => <div className="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">地図を読み込み中...</div>
 })
 
-
-
 export default function MapPage() {
-  const [posts, setPosts] = useState<Post[]>([])
+  const { posts, isLoading, error, createPost, updatePost } = usePosts()
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
   const [editingPost, setEditingPost] = useState<Post | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
-  // 投稿を取得
-  const fetchPosts = async () => {
-    try {
-      const data = await disasterAPI.getPosts()
-      setPosts(data)
-    } catch (error) {
-      setError('投稿の取得に失敗しました')
-      console.error('投稿取得エラー:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchPosts()
-  }, [])
-
   // 投稿作成後の処理
-  const handlePostCreated = () => {
-    fetchPosts()
+  const handlePostCreated = async (postData: {
+    title: string
+    category: string
+    comment: string
+    latitude: number
+    longitude: number
+  }) => {
+    try {
+      await createPost(postData)
+    } catch (error) {
+      console.error('投稿作成エラー:', error)
+    }
   }
 
   // 地図での位置選択
@@ -61,17 +53,23 @@ export default function MapPage() {
     setEditingPost(null)
   }
 
+  // 投稿更新後の処理
+  const handlePostUpdated = async (postData: {
+    id: number
+    title: string
+    category: string
+    comment: string
+  }) => {
+    try {
+      await updatePost(postData)
+      handleCloseEditModal()
+    } catch (error) {
+      console.error('投稿更新エラー:', error)
+    }
+  }
+
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">読み込み中...</p>
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   return (
@@ -111,51 +109,17 @@ export default function MapPage() {
         </div>
 
         {/* 投稿一覧 */}
-        <div className="mt-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-bold mb-4">最新の投稿</h2>
-            {posts.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">まだ投稿がありません</p>
-            ) : (
-              <div className="space-y-4">
-                {posts.slice(0, 10).map((post) => (
-                  <div key={post.id} className="border-b border-gray-200 pb-4 last:border-b-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{post.title}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="inline-block px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded">
-                            {post.category}
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            {new Date(post.createdAt).toLocaleString('ja-JP')}
-                          </span>
-                        </div>
-                        <p className="text-gray-700 mt-2">{post.comment}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          位置: {post.latitude.toFixed(4)}, {post.longitude.toFixed(4)}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleEditPost(post)}
-                        className="ml-2 px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        編集
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <PostList 
+          posts={posts}
+          onEditPost={handleEditPost}
+        />
 
         {/* 投稿編集モーダル */}
         <PostEditModal
           post={editingPost}
           isOpen={isEditModalOpen}
           onClose={handleCloseEditModal}
-          onUpdate={handlePostCreated}
+          onUpdate={handlePostUpdated}
         />
       </div>
     </div>

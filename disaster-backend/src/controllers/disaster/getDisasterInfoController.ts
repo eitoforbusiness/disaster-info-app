@@ -1,15 +1,15 @@
 import { Request, Response } from 'express'
-import { fetchJMAWeatherInfo } from '../services/jmaService'
+import { fetchJMAWeatherInfo } from '../../services/jmaService'
+import { handleControllerError } from '../../utils/errorUtils'
 
-export class DisasterController {
+export class GetDisasterInfoController {
   // 災害情報取得
   static async getDisasterInfo(req: Request, res: Response) {
     try {
       const disasterInfo = await fetchJMAWeatherInfo()
       res.json(disasterInfo)
     } catch (error) {
-      console.error('災害情報取得エラー:', error)
-      res.status(500).json({ error: '災害情報の取得に失敗しました' })
+      handleControllerError(error, res, '災害情報取得')
     }
   }
 } 

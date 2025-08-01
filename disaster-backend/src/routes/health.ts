@@ -1,10 +1,9 @@
 import { Router } from 'express'
+import { HealthCheckController } from '../controllers/health/healthCheckController'
 
 const router = Router()
 
 // ヘルスチェック
-router.get('/', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() })
-})
+router.get('/', HealthCheckController.healthCheck)
 
 export default router 
