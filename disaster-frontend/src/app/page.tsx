@@ -4,37 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { disasterAPI, DisasterInfo } from '@/lib/api'
 
-// サンプルデータ（実際のAPIに置き換える予定）
-const sampleDisasterData: DisasterInfo[] = [
-  {
-    id: '1',
-    title: '地震速報',
-    description: '震度4の地震が発生しました。',
-    severity: 'high',
-    timestamp: '2024-01-15T10:30:00Z',
-    location: '東京都',
-    type: 'earthquake'
-  },
-  {
-    id: '2',
-    title: '豪雨警報',
-    description: '大雨による河川の氾濫に注意してください。',
-    severity: 'medium',
-    timestamp: '2024-01-15T09:15:00Z',
-    location: '神奈川県',
-    type: 'rain'
-  },
-  {
-    id: '3',
-    title: '強風注意報',
-    description: '強風による被害にご注意ください。',
-    severity: 'low',
-    timestamp: '2024-01-15T08:45:00Z',
-    location: '千葉県',
-    type: 'wind'
-  }
-]
-
 function getSeverityColor(severity: string) {
   switch (severity) {
     case 'high':
@@ -61,8 +30,26 @@ function getSeverityText(severity: string) {
   }
 }
 
+// 災害タイプに応じたアイコンと色を取得
+function getDisasterTypeInfo(type: string) {
+  switch (type) {
+    case 'earthquake':
+      return { icon: '🌋', color: 'border-red-500', bgColor: 'bg-red-50' }
+    case 'tsunami':
+      return { icon: '🌊', color: 'border-blue-500', bgColor: 'bg-blue-50' }
+    case 'heavy_rain':
+      return { icon: '🌧️', color: 'border-gray-500', bgColor: 'bg-gray-50' }
+    case 'typhoon':
+      return { icon: '🌀', color: 'border-purple-500', bgColor: 'bg-purple-50' }
+    case 'volcano':
+      return { icon: '🌋', color: 'border-orange-500', bgColor: 'bg-orange-50' }
+    default:
+      return { icon: '⚠️', color: 'border-yellow-500', bgColor: 'bg-yellow-50' }
+  }
+}
+
 export default function HomePage() {
-  const [disasterInfo, setDisasterInfo] = useState<DisasterInfo[]>(sampleDisasterData)
+  const [disasterInfo, setDisasterInfo] = useState<DisasterInfo[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   // 実際のAPIから災害情報を取得する関数
@@ -73,8 +60,8 @@ export default function HomePage() {
       setDisasterInfo(data)
     } catch (error) {
       console.error('災害情報の取得に失敗:', error)
-      // エラー時はサンプルデータを表示
-      setDisasterInfo(sampleDisasterData)
+      // エラー時は空の配列を設定
+      setDisasterInfo([])
     } finally {
       setIsLoading(false)
     }
@@ -135,27 +122,36 @@ export default function HomePage() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
               <p className="mt-4 text-gray-600">災害情報を取得中...</p>
             </div>
-          ) : (
+          ) : disasterInfo.length > 0 ? (
             <div className="grid gap-4">
-              {disasterInfo.map((info) => (
-                <div key={info.id} className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">{info.title}</h3>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white ${getSeverityColor(info.severity)}`}>
-                          危険度: {getSeverityText(info.severity)}
-                        </span>
-                      </div>
-                      <p className="text-gray-700 mb-2">{info.description}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span>場所: {info.location}</span>
-                        <span>時刻: {new Date(info.timestamp).toLocaleString('ja-JP')}</span>
+              {disasterInfo.map((info) => {
+                const typeInfo = getDisasterTypeInfo(info.type)
+                return (
+                  <div key={info.id} className={`bg-white p-6 rounded-lg shadow-md border-l-4 ${typeInfo.color} ${typeInfo.bgColor}`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-2xl">{typeInfo.icon}</span>
+                          <h3 className="text-lg font-semibold text-gray-900">{info.title}</h3>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white ${getSeverityColor(info.severity)}`}>
+                            危険度: {getSeverityText(info.severity)}
+                          </span>
+                        </div>
+                        <p className="text-gray-700 mb-2">{info.description}</p>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span>場所: {info.location}</span>
+                          <span>時刻: {new Date(info.timestamp).toLocaleString('ja-JP')}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600">現在、気象庁から災害情報は発表されていません。</p>
+              <p className="text-sm text-gray-500 mt-2">定期的に更新されます。</p>
             </div>
           )}
         </div>

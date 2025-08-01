@@ -57,7 +57,7 @@ export interface DisasterInfo {
   severity: 'high' | 'medium' | 'low'
   timestamp: string
   location: string
-  type: 'earthquake' | 'rain' | 'wind' | 'other'
+  type: 'earthquake' | 'tsunami' | 'heavy_rain' | 'typhoon' | 'volcano' | 'other'
 }
 
 export interface Post {
