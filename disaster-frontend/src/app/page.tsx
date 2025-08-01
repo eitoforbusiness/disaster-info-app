@@ -3,7 +3,6 @@
 import { useEarthquakeInfo } from '@/hooks/useEarthquakeInfo'
 import { useTsunamiInfo } from '@/hooks/useTsunamiInfo'
 import Header from '@/components/Header'
-import SafetyStatus from '@/components/SafetyStatus'
 import EarthquakeInfoList from '@/components/EarthquakeInfoList'
 import TsunamiInfoList from '@/components/TsunamiInfoList'
 import LastUpdatedInfo from '@/components/LastUpdatedInfo'
@@ -38,8 +37,6 @@ export default function HomePage() {
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <SafetyStatus />
-        
         <EarthquakeInfoList 
           earthquakeInfo={earthquakeInfo}
           isLoading={earthquakeLoading}
