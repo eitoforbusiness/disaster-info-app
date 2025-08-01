@@ -12,7 +12,8 @@ export class UpdatePostController {
         throw createValidationError(validation.error)
       }
 
-      const { id, title, category, comment } = req.body
+      const { id } = req.params
+      const { title, category, comment } = req.body
 
       const post = await PostService.updatePost({
         id: parseInt(id),

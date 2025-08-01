@@ -12,4 +12,18 @@ export class GetPostsController {
       handleControllerError(error, res, '投稿取得')
     }
   }
+
+  // 個別投稿取得
+  static async getPostById(req: Request, res: Response) {
+    try {
+      const { id } = req.params
+      const post = await PostService.getPostById(parseInt(id))
+      if (!post) {
+        return res.status(404).json({ message: '投稿が見つかりません' })
+      }
+      res.json(post)
+    } catch (error) {
+      handleControllerError(error, res, '投稿取得')
+    }
+  }
 } 

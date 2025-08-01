@@ -32,10 +32,6 @@ export function validateCreatePostData(data: any): ValidationResult {
 
 // 投稿更新データのバリデーション
 export function validateUpdatePostData(data: any): ValidationResult {
-  if (!data.id || typeof data.id !== 'number' || data.id <= 0) {
-    return { isValid: false, error: '有効な投稿IDが必要です' }
-  }
-
   if (!data.title || typeof data.title !== 'string' || data.title.trim().length === 0) {
     return { isValid: false, error: 'タイトルが必要です' }
   }

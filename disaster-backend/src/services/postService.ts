@@ -26,6 +26,13 @@ export class PostService {
     })
   }
 
+  // 個別投稿取得
+  static async getPostById(id: number) {
+    return await prisma.post.findUnique({
+      where: { id }
+    })
+  }
+
   // 投稿作成
   static async createPost(data: CreatePostData) {
     return await prisma.post.create({

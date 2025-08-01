@@ -10,16 +10,19 @@ const router = Router()
 // 投稿一覧取得
 router.get('/', GetPostsController.getAllPosts)
 
+// 個別投稿取得
+router.get('/:id', GetPostsController.getPostById)
+
 // 投稿作成
 router.post('/', CreatePostController.createPost)
 
 // 投稿更新
-router.put('/', UpdatePostController.updatePost)
+router.put('/:id', UpdatePostController.updatePost)
 
 // 投稿削除
 router.delete('/:id', DeletePostController.deletePost)
 
 // いいね機能
-router.post('/:id/like', LikePostController.likePost)
+router.post('/:id/likes', LikePostController.likePost)
 
 export default router 

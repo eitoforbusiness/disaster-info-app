@@ -38,13 +38,13 @@ export default function HomePage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <EarthquakeInfoList 
-          earthquakeInfo={earthquakeInfo}
+          earthquakeInfo={earthquakeInfo || []}
           isLoading={earthquakeLoading}
           onRefresh={refetchEarthquake}
         />
 
         <TsunamiInfoList 
-          tsunamiInfo={tsunamiInfo}
+          tsunamiInfo={tsunamiInfo || []}
           isLoading={tsunamiLoading}
           onRefresh={refetchTsunami}
         />
